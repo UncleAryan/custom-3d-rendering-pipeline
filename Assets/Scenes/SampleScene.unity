@@ -319,7 +319,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dea96fde4c85cb344b3ac9f7159f4bf0, type: 3}
+  m_Script: {fileID: 11500000, guid: 2947fddecc97bb7459cfd97e572e6c59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   usePerspective: 1
@@ -331,13 +331,18 @@ MonoBehaviour:
   vpY: 0
   vpW: 1
   vpH: 1
-  translate: {x: 0, y: 0, z: 0}
+  translate: {x: 0, y: 0, z: -10}
   rotateDeg: {x: 0, y: 0, z: 0}
   scale: {x: 1, y: 1, z: 1}
   autoSpin: 1
   spinSpeedDegPerSec: {x: 0, y: 45, z: 0}
   showCube: 1
   cubeSize: 2
+  showAxes: 1
+  axisLength: 5
+  showGridXZ: 1
+  gridExtent: 8
+  gridStep: 1
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -347,7 +352,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af4c3df2e5aa15844840029975b0ad6f, type: 3}
+  m_Script: {fileID: 11500000, guid: fbd9301d909cf3e44b4fb0e9fb217ef9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807

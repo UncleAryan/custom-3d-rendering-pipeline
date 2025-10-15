@@ -20,7 +20,7 @@ namespace MyCustomMath {
         [Range(0, 1)] public float vpH = 1f;
 
         [Header("Modeling Transform (T * Rz * Ry * Rx * S)")]
-        public Vector3 translate = new Vector3(0, 0, 6);
+        public Vector3 translate = new Vector3(0, 2, 6);
         public Vector3 rotateDeg = new Vector3(0, 0, 0);
         public Vector3 scale = new Vector3(1, 1, 1);
         public bool autoSpin = true;
@@ -29,6 +29,14 @@ namespace MyCustomMath {
         [Header("Primitives")]
         public bool showCube = true;
         public float cubeSize = 2f;
+
+        // TODO B1: add public fields
+        [Header("Object-Space, World-Fixed Objects")]
+        public bool showAxes = true;
+        public float axisLength = 5f;
+        public bool showGridXZ = true;
+        public float gridExtent = 8f;
+        public float gridStep = 1f;
 
 
         /*[Header("Matrix GUI")]
@@ -76,5 +84,35 @@ namespace MyCustomMath {
             return lines;
         }
 
+        // TODO B2: add two methods
+        public List<Line3> CollectGridAndAxes() {
+            // Build a new List<Line3>();
+            var lines = new List<Line3>();  
+
+            // if (showAxes) add CG_WirePrims.Axis(axisLength)
+            if(showAxes) {
+                lines.AddRange(CGWirePrims.Axis(axisLength));
+            }
+
+            // if (showGridXZ) add CG_WirePrims.GridXZ(gridExtent, gridStep)
+            if (showGridXZ) {
+                lines.AddRange(CGWirePrims.GridXZ(gridExtent, gridStep));
+            }
+
+            // return the list
+            return lines;
+        }
+
+        public List<Line3> CollectCubeOnly() {
+            // Preserve the existing cube behavior:
+            // if (showCube) add CG_WirePrims.Cube(cubeSize)
+            var lines = new List<Line3>();
+            if (showCube) {
+                lines.AddRange(CGWirePrims.Cube(cubeSize));
+            }
+
+            // return the list
+            return lines;
+        }
     }
 }

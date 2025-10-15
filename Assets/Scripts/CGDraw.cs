@@ -38,26 +38,40 @@ namespace MyCustomMath {
             if (demo == null) return;
             EnsureMaterial();
 
-            int w = Screen.width;
-            int h = Screen.height;
+            int W = Screen.width;
+            int H = Screen.height;
 
-            var m = demo.BuildModelMatrix();
-            var p = demo.BuildProjectionMatrix(w, h);
+            // var m = demo.BuildModelMatrix();
+            // var p = demo.BuildProjectionMatrix(w, h);
+
+            // TODO C1: inside OnRenderObject()
+            // var P = demo.BuildProjectionMatrix(W, H);
+            // Compute pixel viewport (vx,vy,vw,vh) as before.
+            var P = demo.BuildProjectionMatrix(W, H);
+            var M_grid = Mat4.Identity(); // world-fixed
+            var M_cube = demo.BuildModelMatrix(); // adjustable
 
             // viewport in pixels
-            float vx = demo.vpX * w;
-            float vy = demo.vpY * h;
-            float vw = demo.vpW * w; if (vw < 1f) vw = 1f;
-            float vh = demo.vpH * h; if (vh < 1f) vh = 1f;
+            float vx = demo.vpX * W;
+            float vy = demo.vpY * H;
+            float vw = demo.vpW * W; if (vw < 1f) vw = 1f;
+            float vh = demo.vpH * H; if (vh < 1f) vh = 1f;
 
-            var prims = demo.CollectPrims();
+            // var prims = demo.CollectPrims();
+            var gridAndAxes = demo.CollectGridAndAxes();
+            var cubeOnly = demo.CollectCubeOnly();
             GL.Color(Color.white); // or any bright color, alpha=1
 
             lineMat.SetPass(0);
             GL.PushMatrix();
-            GL.LoadPixelMatrix(0, w, h, 0); // 2D pixel space, (0,0)=top-left
+            GL.LoadPixelMatrix(0, W, H, 0); // 2D pixel space, (0,0)=top-left
 
-            DrawLinesTransformed(prims, m, p, vx, vy, vw, vh);
+            // DrawLinesTransformed(prims, m, p, vx, vy, vw, vh);
+
+            // PASS 1: grid + axes with M_grid
+            DrawLinesTransformed(gridAndAxes, M_grid, P, vx, vy, vw, vh);
+            // PASS 2: cube with M_cube
+            DrawLinesTransformed(cubeOnly, M_cube, P, vx, vy, vw, vh);
 
             GL.PopMatrix();
         }
