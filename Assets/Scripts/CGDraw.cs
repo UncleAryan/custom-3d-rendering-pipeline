@@ -1,5 +1,7 @@
 // Draws wire primitives using our own pipeline: Model -> Projection -> NDC -> Viewport -> Pixel
 // Renders via GL.LINES in screen space (GL.LoadPixelMatrix). Attach to the Camera.
+
+// Vertex Data -> Model Transformation -> Projection Transformation -> Perspective Division -> Viewport Transformation -> Rasterization
 using System;
 using System.Collections.Generic;
 using MyCustomMath;
@@ -33,7 +35,7 @@ namespace MyCustomMath {
             lineMat.SetInt("_ZTest", (int)UnityEngine.Rendering.CompareFunction.Always);
         }
 
-
+        
         void OnRenderObject() {
             if (demo == null) return;
             EnsureMaterial();
@@ -48,6 +50,7 @@ namespace MyCustomMath {
             // var P = demo.BuildProjectionMatrix(W, H);
             // Compute pixel viewport (vx,vy,vw,vh) as before.
             var P = demo.BuildProjectionMatrix(W, H);
+            var V = demo.BuildViewMatrix();  // added view matrix
             var M_grid = Mat4.Identity(); // world-fixed
             var M_cube = demo.BuildModelMatrix(); // adjustable
 
@@ -60,7 +63,6 @@ namespace MyCustomMath {
             // var prims = demo.CollectPrims();
             var gridAndAxes = demo.CollectGridAndAxes();
             var cubeOnly = demo.CollectCubeOnly();
-            GL.Color(Color.white); // or any bright color, alpha=1
 
             lineMat.SetPass(0);
             GL.PushMatrix();
@@ -68,24 +70,98 @@ namespace MyCustomMath {
 
             // DrawLinesTransformed(prims, m, p, vx, vy, vw, vh);
 
+            // Now transform: P × V × M instead of P × M
             // PASS 1: grid + axes with M_grid
-            DrawLinesTransformed(gridAndAxes, M_grid, P, vx, vy, vw, vh);
+            DrawLinesTransformed(gridAndAxes, M_grid, V, P, vx, vy, vw, vh);
             // PASS 2: cube with M_cube
-            DrawLinesTransformed(cubeOnly, M_cube, P, vx, vy, vw, vh);
+            DrawLinesTransformed(cubeOnly, M_cube, V, P, vx, vy, vw, vh);
 
             GL.PopMatrix();
         }
 
-        void DrawLinesTransformed(List<Line3> lines, Mat4 m, Mat4 p, float vx, float vy, float vw, float vh) {
-            // --- CUBE (non-axis, non-grid) ---
+        void DrawLinesTransformed(List<Line3> lines, Mat4 M, Mat4 V, Mat4 P, float vx, float vy, float vw, float vh)
+        {
+            // pass 1: non-axes (white)
             GL.Begin(GL.LINES);
-            GL.Color(new Color(1, 1, 1, 1)); // white
-            for (int i = 0; i < lines.Count; i++) {
+            GL.Color(new Color(1, 1, 1, 1));
+            for (int i = 0; i < lines.Count; i++)
+            {
                 var ln = lines[i];
-                DrawLineObject(ln.a, ln.b, m, p, vx, vy, vw, vh);
+                bool isAxisX = IsAxis(ln, 0);
+                bool isAxisY = IsAxis(ln, 1);
+                bool isAxisZ = IsAxis(ln, 2);
+                if (isAxisX || isAxisY || isAxisZ) continue;
+                DrawLineObject(ln.a, ln.b, M, V, P, vx, vy, vw, vh);
             }
             GL.End();
+
+            // X - red
+            GL.Begin(GL.LINES);
+            GL.Color(new Color(1, 0, 0, 1));
+            for (int i = 0; i < lines.Count; i++)
+                if (IsAxis(lines[i], 0))
+                    DrawLineObject(lines[i].a, lines[i].b, M, V, P, vx, vy, vw, vh);
+            GL.End();
+
+            // Y - green
+            GL.Begin(GL.LINES);
+            GL.Color(new Color(0, 1, 0, 1));
+            for (int i = 0; i < lines.Count; i++)
+                if (IsAxis(lines[i], 1))
+                    DrawLineObject(lines[i].a, lines[i].b, M, V, P, vx, vy, vw, vh);
+            GL.End();
+
+            // Z - blue
+            GL.Begin(GL.LINES);
+            GL.Color(new Color(0, 0, 1, 1));
+            for (int i = 0; i < lines.Count; i++)
+                if (IsAxis(lines[i], 2))
+                    DrawLineObject(lines[i].a, lines[i].b, M, V, P, vx, vy, vw, vh);
+            GL.End();
         }
+
+        /*
+        void DrawLinesTransformed(List<Line3> lines, Mat4 M, Mat4 P, float vx, float vy, float vw, float vh) {
+            // pass 1: non-axes (white)
+            GL.Begin(GL.LINES);
+            GL.Color(new Color(1, 1, 1, 1));
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var ln = lines[i];
+                bool isAxisX = IsAxis(ln, 0);
+                bool isAxisY = IsAxis(ln, 1);
+                bool isAxisZ = IsAxis(ln, 2);
+                if (isAxisX || isAxisY || isAxisZ) continue;
+                DrawLineObject(ln.a, ln.b, M, P, vx, vy, vw, vh);
+            }
+            GL.End();
+
+            // X - red
+            GL.Begin(GL.LINES);
+            GL.Color(new Color(1, 0, 0, 1));
+            for (int i = 0; i < lines.Count; i++)
+                if (IsAxis(lines[i], 0))
+                    DrawLineObject(lines[i].a, lines[i].b, M, P, vx, vy, vw, vh);
+            GL.End();
+
+            // Y - green
+            GL.Begin(GL.LINES);
+            GL.Color(new Color(0, 1, 0, 1));
+            for (int i = 0; i < lines.Count; i++)
+                if (IsAxis(lines[i], 1))
+                    DrawLineObject(lines[i].a, lines[i].b, M, P, vx, vy, vw, vh);
+            GL.End();
+
+            // Z - blue
+            GL.Begin(GL.LINES);
+            GL.Color(new Color(0, 0, 1, 1));
+            for (int i = 0; i < lines.Count; i++)
+                if (IsAxis(lines[i], 2))
+                    DrawLineObject(lines[i].a, lines[i].b, M, P, vx, vy, vw, vh);
+            GL.End();
+        }
+
+        */
 
         bool IsAxis(Line3 ln, int axis) // 0=x,1=y,2=z
         {
@@ -98,6 +174,30 @@ namespace MyCustomMath {
             return (Math.Abs(a.x - b.x) < 1e-6f) && (Math.Abs(a.y - b.y) < 1e-6f) && (Math.Abs(a.z - b.z) < 1e-6f);
         }
 
+        void DrawLineObject(Vec3 aObj, Vec3 bObj, Mat4 m, Mat4 v, Mat4 p, float vx, float vy, float vw, float vh)
+        {
+            //var aClip = Mat4.Mul(p, Mat4.Mul(m, Vec4.FromPoint(aObj)));
+            //var bClip = Mat4.Mul(p, Mat4.Mul(m, Vec4.FromPoint(bObj)));
+
+            var pvm = p * v * m;         // composite once
+            var aClip = pvm * Vec4.From3DPoint(aObj);    // then apply to each vertex
+            var bClip = pvm * Vec4.From3DPoint(bObj);
+
+
+            // perspective divide -> NDC
+            Vec3 aNdc = aClip.Homogenized();
+            Vec3 bNdc = bClip.Homogenized();
+
+            if (BothOutside(aNdc, bNdc)) return;
+
+            Vector2 aPix = NdcToPixel(aNdc, vx, vy, vw, vh);
+            Vector2 bPix = NdcToPixel(bNdc, vx, vy, vw, vh);
+
+            GL.Vertex3(aPix.x, aPix.y, 0);
+            GL.Vertex3(bPix.x, bPix.y, 0);
+        }
+
+        /*
         void DrawLineObject(Vec3 aObj, Vec3 bObj, Mat4 m, Mat4 p, float vx, float vy, float vw, float vh) {
             //var aClip = Mat4.Mul(p, Mat4.Mul(m, Vec4.FromPoint(aObj)));
             //var bClip = Mat4.Mul(p, Mat4.Mul(m, Vec4.FromPoint(bObj)));
@@ -119,6 +219,7 @@ namespace MyCustomMath {
             GL.Vertex3(aPix.x, aPix.y, 0);
             GL.Vertex3(bPix.x, bPix.y, 0);
         }
+        */
 
         bool BothOutside(Vec3 a, Vec3 b) {
             if (a.x < -1 && b.x < -1) return true;

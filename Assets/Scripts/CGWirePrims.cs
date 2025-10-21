@@ -50,15 +50,24 @@ namespace MyCustomMath {
             return lines;
         }
 
+        /*
+           Camera Position: (0, 0, 0) looking down +Z axis
+           Grid Position:   Entirely at Y = 0 (XZ plane)
+           Result: The grid is exactly in the camera's "horizon line"
+        */
+
         // TODO A2: inside CG_WirePrims
         public static List<Line3> GridXZ(float extent = 8f, float step = 1f) {
             // Guard: if (step <= 0) step = 1; if (extent < step) extent = step;
             if (step <= 0) step = 1f;
             if (extent < step) extent = step;
 
+            
+
             // int N = ceil(extent / step); float E = N * step;
             int N = Mathf.CeilToInt(extent / step);
             float E = N * step;
+
 
             var lines = new List<Line3>();
 

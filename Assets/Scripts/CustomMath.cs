@@ -220,18 +220,18 @@ namespace MyCustomMath {
         public static Mat4 PerspectiveProjection(float fovDegrees, float aspect, float near, float far) {
             float fovRad = fovDegrees * Mathf.Deg2Rad;
             float tanHalfFov = Mathf.Tan(fovRad * 0.5f);
-            float range = near - far;
+            float range = far - near;  // CORRECTED: far - near
 
             Mat4 m = new Mat4();
 
             m.m00 = 1.0f / (aspect * tanHalfFov);
             m.m11 = 1.0f / tanHalfFov;
-            m.m22 = (far + near) / range;
-            m.m23 = (2.0f * far * near) / range;
+            m.m22 = -(far + near) / range;  // CORRECTED: negative
+            m.m23 = -(2.0f * far * near) / range;  // CORRECTED: negative
             m.m32 = -1.0f;
             m.m33 = 0f;
 
-            // Set other elements to 0
+            // Zero out other elements
             m.m01 = 0; m.m02 = 0; m.m03 = 0;
             m.m10 = 0; m.m12 = 0; m.m13 = 0;
             m.m20 = 0; m.m21 = 0; m.m30 = 0;

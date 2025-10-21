@@ -38,10 +38,13 @@ namespace MyCustomMath {
         public float gridExtent = 8f;
         public float gridStep = 1f;
 
+        [Header("Virtual Camera")]
+        public Vector3 cameraPosition = new Vector3(0, 3, 0);  // Camera above origin
 
         /*[Header("Matrix GUI")]
         [SerializeField] bool showMatrixGui = true;
         [SerializeField] Rect matrixWin = new Rect(12, 12, 620, 300);  // top-left by default*/
+
 
         void Update() {
             if (Input.GetKeyDown(KeyCode.Alpha1)) usePerspective = false;
@@ -64,6 +67,12 @@ namespace MyCustomMath {
             // Order: M = T * Rz * Ry * Rx * S
             var m = (t * (rz * (ry * (rx * s))));
             return m;
+        }
+
+        public Mat4 BuildViewMatrix()
+        {
+            // Move entire world opposite to camera movement
+            return Mat4.Translate(-cameraPosition.x, -cameraPosition.y, -cameraPosition.z);
         }
 
         public Mat4 BuildProjectionMatrix(int pixelW, int pixelH) {
